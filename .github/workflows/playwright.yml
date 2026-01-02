@@ -33,7 +33,7 @@ jobs:
       - name: Run Playwright tests
         env:
           # placeholders for env variables:
-          EZRA_USERNAME: ${{ secrets.EZRA_EMAIL }}
+          EZRA_EMAIL: ${{ secrets.EZRA_EMAIL }}
           EZRA_PASSWORD: ${{ secrets.EZRA_PASSWORD }}
           EZRA_BASE_URL: ${{ secrets.EZRA_BASE_URL }}
         run: npx playwright test

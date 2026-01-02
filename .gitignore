@@ -22,3 +22,6 @@ blob-report/
 .vscode/
 .idea/
 
+# .swp
+*.swp
+
