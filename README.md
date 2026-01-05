@@ -12,7 +12,7 @@ Stable synchronization strategies
 
 Scalable Page Object architecture
 
-Secure handling of sensitive workflows (payments, PHI/PII awareness)
+Secure handling of sensitive data (payments, env variables)
 
 # Tech Stack
 
@@ -27,6 +27,8 @@ dotenv for environment configuration
 # Project Structure
 
 ezra-playwright/
+├── .github/workflows
+│   ├── playwright.yml
 ├── pages/
 │   ├── LoginPage.ts
 │   ├── HomePage.ts
@@ -47,7 +49,7 @@ ezra-playwright/
 ├── playwright.config.ts
 └── README.md
 
-Note: playwright-report and test-results folders will be created in IDE (eg: Visual Studio Code)
+Note: playwright-report and test-results folders will be created in IDE (eg: Visual Studio Code) or under https://github.com/cproint/ezra-playwright/actions/runs if using github actions
 
 # Architecture & Design Principles
 
@@ -61,11 +63,12 @@ Clear, business-level actions
 
 No hardcoded test data
 
-This keeps tests readable and minimizes duplication.
+This keeps tests readable and minimizes duplication
 
 2. Synchronization Strategy
 
 Ezra is a Single Page Application (SPA).
+
 To avoid flaky tests:
 
 domcontentloaded is used for navigation
@@ -132,22 +135,23 @@ Stripe card inputs are hosted inside secure iframes and Handled using testData.t
 
 # Tradeoffs
 
-    Dynamic dates/times are validated via sanity checks, not exact matches
+    To keep the tests fast and reliable, the booking flow sometimes navigates directly to a page instead of clicking through every screen. This works well, but it assumes the user is already logged in
 
-    UI behavior is trusted over visual styling (e.g., bold vs grey dates)
+    Dates and times for scans are selected dynamically based on availability. Because these values change from run to run, the tests check that a valid appointment was booked rather than matching an exact date or time.
 
-    Direct URL navigation assumes valid authenticated session
+    The tests rely on how the application behaves (for example, whether time slots appear) instead of how things look visually (such as bold or grey text). This makes the tests more stable if the UI styling changes.
+
 
 
 # Assumptions
 
-    Test credentials are valid
+    The test account credentials provided are valid and active.
 
-    Stripe test environment is enabled
+    Stripe is running in a test mode and accepts standard test credit card numbers.
 
-    Booking availability exists for at least one center
+    At least one scan center has availability so the booking flow can complete.
 
-    All other UI elements are validdated (eg: continue button is disabled until all data is entered etc)
+    Core UI behaviors (such as disabling the Continue button until required fields are filled) are already covered by existing tests and are not re-validated in this flow
     
 # Security Considerations
 
@@ -165,10 +169,25 @@ Stripe card inputs are hosted inside secure iframes and Handled using testData.t
 
     Environment Variables are handled using .env file (not checked in to this repo)
 
-# Running Tests
-    npx playwright test tests/booking-success.spec.ts --headed
-
 # Installation
 
     Please follow Playwright official documentation for installation instructions
 
+# How to Run Tests?
+    clone the repo and run below command
+    npx playwright test tests/booking-success.spec.ts --headed
+    or
+    one can run directly using github actions workflow from https://github.com/cproint/ezra-playwright/actions 
+# TODO?
+    Create a separate repo and call it as common-repo. This repo should have common methods like Login, DB utilities, common utils, logging, common locators etc that will be used by many automation test teams.
+
+    Add more tests to verify Scan details, Admin test cases using User facing Portal etc (eg: the appointment details are recorded correctly in User facing Portal etc)
+
+    Create a separate repo for testing API endpoints, Security, Performance, end-to-end, Accessibility, Localization Testing etc
+
+    Infra changes to run tests based on number of parallel nodes per product
+
+    Write scripts to seed data into various envs before running tests 
+
+    Useful tools to scrape/synthesize Production data to reproduce the customer issues
+    
